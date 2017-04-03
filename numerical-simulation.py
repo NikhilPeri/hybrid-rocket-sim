@@ -18,11 +18,15 @@ def run():
     global prev_velocity
     global prev_position
     global prev_mass
+    global prev_chamber_pressure
+    prev_chamber_pressure = atmospheric_pressure(0)
+    print mass_flow(0)
     for time in np.arange(0, burn_time, time_step):
         #order matters
         prev_velocity = velocity(time)
         prev_position += prev_velocity*time_step
         prev_mass = mass(time)
+        prev_chamber_pressure = chamber_pressure(time)
 
     print "burnout altitude(m): " + str(prev_position)
     print "burnout velocity(m/s) " + str(prev_velocity)
@@ -39,12 +43,17 @@ def initializeModel():
     global nitrous_density
     relative_temp = 1- ambient_temprature/309.57 #ambite_temp / critical_temp
     nitrous_density = math.pow(math.e, (1.72328*math.pow(relative_temp, 1.0/3.0)-0.83950*math.pow(relative_temp, 2.0/3.0) + 0.51060*relative_temp -0.10412*math.pow(relative_temp, 4.0/3.0)))*452
+    global parrafin_density
+    parrafin_density = 900 #TODO get realistic value
+
     #============================================
     #Combustion
     global tank_pressure # tank_pressure in PSI
     tank_pressure = math.pow(10, (61.5168 - 2101.6/ambient_temprature - 22.337*math.log(ambient_temprature, 10) + 0.018232*ambient_temprature - 0.00000000011348*math.pow(ambient_temprature, 2)))*0.0193367747
     global valve_cv
     valve_cv = 1.5
+    global injector_cv
+    injector_cv = 1.5 #TODO actual value
     #============================================
     #Nozzle
     global exit_area
@@ -82,8 +91,10 @@ def chamber_pressure(t):
 
 # kg/s
 def mass_flow(t):
-    #TODO non-linear thrust
-    return 0.5
+    gallon_cubic_meter = 264.172
+    chamber_pressure = prev_chamber_pressure / 6894.76
+    total_cv = math.sqrt(1.0/((1.0/math.pow(percentage_valve_open(t)*valve_cv,2))+(1.0/math.pow(injector_cv, 2))))
+    return total_cv*math.sqrt((nitrous_density/1000.0)/(tank_pressure-chamber_pressure))*nitrous_density/(60*gallon_cubic_meter)
 
 def percentage_valve_open(t):
     return 1
