@@ -3,6 +3,7 @@ import math
 import numpy as np
 
 gravity = 9.81
+lanuch_angle = 90
 ambient_temprature = 293 #kelvin
 burn_time = 2
 coefficent_drag = 0.8
@@ -26,10 +27,13 @@ def run():
         prev_velocity = velocity(time)
         prev_position += prev_velocity*time_step
         prev_mass = mass(time)
+        print "velocity@"+str(time)+"s :"+str(prev_velocity)
+        print "position@"+str(time)+"s: "+str(prev_position)
+        print "mass@"+str(time)+"s: "+str(prev_mass)+"\n"
         prev_chamber_pressure = chamber_pressure(time)
 
     print "burnout altitude(m): " + str(prev_position)
-    print "burnout velocity(m/s) " + str(prev_velocity)
+    print "burnout velocity(m/s): " + str(prev_velocity)
 
 def initializeModel():
     #============================================
@@ -45,7 +49,6 @@ def initializeModel():
     nitrous_density = math.pow(math.e, (1.72328*math.pow(relative_temp, 1.0/3.0)-0.83950*math.pow(relative_temp, 2.0/3.0) + 0.51060*relative_temp -0.10412*math.pow(relative_temp, 4.0/3.0)))*452
     global parrafin_density
     parrafin_density = 900 #TODO get realistic value
-
     #============================================
     #Combustion
     global tank_pressure # tank_pressure in PSI
